@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "github.com/distuurbia/balance/protocol/balance";
+
+service BalanceService {
+    rpc AddBalanceChange(AddBalanceChangeRequest) returns (AddBalanceChangeResponse) {}
+    rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse) {}
+    rpc DeleteProfilesBalance(DeleteProfilesBalanceRequest) returns (DeleteProfilesBalanceResponse) {}
+}
+
+message AddBalanceChangeRequest {
+    string profileID = 1;
+    double amount = 2;
+}
+message AddBalanceChangeResponse {}
+
+message GetBalanceRequest {
+    string profileID = 1;
+
+}
+message GetBalanceResponse {
+    double totalBalance = 1;
+}
+
+message DeleteProfilesBalanceRequest {
+    string profileID = 1;
+
+}
+message DeleteProfilesBalanceResponse {}
