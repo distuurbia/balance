@@ -43,7 +43,7 @@ func main() {
 	r := repository.NewBalanceRepository(pool)
 	s := service.NewBalanceService(r)
 	h := handler.NewBalanceHandler(s, validate)
-	lis, err := net.Listen("tcp", "localhost:5433")
+	lis, err := net.Listen("tcp", "localhost:8082")
 	if err != nil {
 		logrus.Fatalf("main -> %v", err)
 	}

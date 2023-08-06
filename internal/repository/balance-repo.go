@@ -27,12 +27,6 @@ func NewBalanceRepository(pool *pgxpool.Pool) *BalanceRepository {
 
 // AddBalanceChange adds row of balances table using profileID and positive/negative value of amount
 func (r *BalanceRepository) AddBalanceChange(ctx context.Context, profileID uuid.UUID, amount float64) error {
-	if profileID == uuid.Nil {
-		return fmt.Errorf("BalanceRepository -> AddBalanceChange -> error: failed to use uuid")
-	}
-	if amount == zero {
-		return fmt.Errorf("BalanceRepository -> AddBalanceChange -> error: amount cannot be zero")
-	}
 	tx, err := r.pool.Begin(ctx)
 
 	defer func() {
@@ -61,9 +55,6 @@ func (r *BalanceRepository) AddBalanceChange(ctx context.Context, profileID uuid
 
 // GetBalance gets all deposits or withdraws of exact profile from balances table and counts total balance
 func (r *BalanceRepository) GetBalance(ctx context.Context, profileID uuid.UUID) (float64, error) {
-	if profileID == uuid.Nil {
-		return zero, fmt.Errorf("BalanceRepository -> GetBalance -> error: failed to use uuid")
-	}
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
 
 	defer func() {
@@ -103,9 +94,6 @@ func (r *BalanceRepository) GetBalance(ctx context.Context, profileID uuid.UUID)
 
 // DeleteProfilesBalance deletes all rows from balances table related to exact profile using profileID
 func (r *BalanceRepository) DeleteProfilesBalance(ctx context.Context, profileID uuid.UUID) error {
-	if profileID == uuid.Nil {
-		return fmt.Errorf("BalanceRepository -> DeleteProfilesBalance -> error: failed to use uuid")
-	}
 	tx, err := r.pool.Begin(ctx)
 
 	defer func() {

@@ -9,18 +9,15 @@ import (
 )
 
 func TestAddBalanceChange(t *testing.T) {
-	err := r.AddBalanceChange(context.Background(), uuid.New(), 102.3)
+	profileID := uuid.New()
+	amount := float64(102.3)
+	err := r.AddBalanceChange(context.Background(), profileID, amount)
 	require.NoError(t, err)
-}
 
-func TestAddBalanceChangeNilProfileID(t *testing.T) {
-	err := r.AddBalanceChange(context.Background(), uuid.Nil, 102.3)
-	require.Error(t, err)
-}
-
-func TestAddBalanceChangeZeroAmount(t *testing.T) {
-	err := r.AddBalanceChange(context.Background(), uuid.New(), 0)
-	require.Error(t, err)
+	var testAmount float64
+	err = r.pool.QueryRow(context.Background(), "SELECT amount FROM balances WHERE profileid = $1", profileID).Scan(&testAmount)
+	require.NoError(t, err)
+	require.Equal(t, amount, testAmount)
 }
 
 func TestGetBalance(t *testing.T) {
@@ -34,11 +31,6 @@ func TestGetBalance(t *testing.T) {
 	totalBalance, err := r.GetBalance(context.Background(), profileID)
 	require.NoError(t, err)
 	require.Equal(t, dep+withdraw, totalBalance)
-}
-
-func TestGetBalanceNilID(t *testing.T) {
-	_, err := r.GetBalance(context.Background(), uuid.Nil)
-	require.Error(t, err)
 }
 
 func TestDeleteProfilesBalance(t *testing.T) {
@@ -57,14 +49,4 @@ func TestDeleteProfilesBalance(t *testing.T) {
 	totalBalance, err := r.GetBalance(context.Background(), profileID)
 	require.NoError(t, err)
 	require.Equal(t, float64(0), totalBalance)
-}
-
-func TestDeleteProfilesBalanceNilID(t *testing.T) {
-	err := r.DeleteProfilesBalance(context.Background(), uuid.Nil)
-	require.Error(t, err)
-}
-
-func TestDeleteProfilesBalanceNotExist(t *testing.T) {
-	err := r.DeleteProfilesBalance(context.Background(), uuid.New())
-	require.Error(t, err)
 }

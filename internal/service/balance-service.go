@@ -30,12 +30,6 @@ func NewBalanceService(r BalanceRepository) *BalanceService {
 
 // AddBalanceChange calls lower method of repository AddBalanceChange
 func (s *BalanceService) AddBalanceChange(ctx context.Context, profileID uuid.UUID, amount float64) error {
-	if profileID == uuid.Nil {
-		return fmt.Errorf("BalanceService -> AddBalanceChange -> error: failed to use uuid")
-	}
-	if amount == zero {
-		return fmt.Errorf("BalanceService -> AddBalanceChange -> error: amount cannot be zero")
-	}
 	err := s.r.AddBalanceChange(ctx, profileID, amount)
 	if err != nil {
 		return fmt.Errorf("BalanceService -> AddBalanceChange -> %w", err)
@@ -45,9 +39,6 @@ func (s *BalanceService) AddBalanceChange(ctx context.Context, profileID uuid.UU
 
 // GetBalance calls lower method of reposirory GetBalance
 func (s *BalanceService) GetBalance(ctx context.Context, profileID uuid.UUID) (float64, error) {
-	if profileID == uuid.Nil {
-		return zero, fmt.Errorf("BalanceService -> GetBalance -> error: failed to use uuid")
-	}
 	totalBalance, err := s.r.GetBalance(ctx, profileID)
 	if err != nil {
 		return zero, fmt.Errorf("BalanceService -> GetBalance -> %w", err)
@@ -57,9 +48,6 @@ func (s *BalanceService) GetBalance(ctx context.Context, profileID uuid.UUID) (f
 
 // DeleteProfilesBalance calls lower method of repository DeleteProfilesBalance
 func (s *BalanceService) DeleteProfilesBalance(ctx context.Context, profileID uuid.UUID) error {
-	if profileID == uuid.Nil {
-		return fmt.Errorf("BalanceService -> DeleteProfilesBalance -> error: failed to use uuid")
-	}
 	err := s.r.DeleteProfilesBalance(ctx, profileID)
 	if err != nil {
 		return fmt.Errorf("BalanceService -> DeleteProfilesBalance -> %w", err)

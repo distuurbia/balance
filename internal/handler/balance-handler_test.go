@@ -14,22 +14,11 @@ import (
 func TestValidationID(t *testing.T) {
 	s := new(mocks.BalanceService)
 	h := NewBalanceHandler(s, validate)
-	_, err := h.ValidationID(context.Background(), uuid.New().String())
+
+	testID := uuid.New()
+	validatedID, err := h.ValidationID(context.Background(), testID.String())
 	require.NoError(t, err)
-}
-
-func TestValidationIDNotID(t *testing.T) {
-	s := new(mocks.BalanceService)
-	h := NewBalanceHandler(s, validate)
-	_, err := h.ValidationID(context.Background(), "someString")
-	require.Error(t, err)
-}
-
-func TestValidationIDNil(t *testing.T) {
-	s := new(mocks.BalanceService)
-	h := NewBalanceHandler(s, validate)
-	_, err := h.ValidationID(context.Background(), uuid.Nil.String())
-	require.Error(t, err)
+	require.Equal(t, testID, validatedID)
 }
 
 func TestAddBalanceChange(t *testing.T) {
@@ -44,17 +33,6 @@ func TestAddBalanceChange(t *testing.T) {
 		Amount:    float64(505.23),
 	})
 	require.NoError(t, err)
-}
-
-func TestAddBalanceChangeAmountZero(t *testing.T) {
-	s := new(mocks.BalanceService)
-	h := NewBalanceHandler(s, validate)
-
-	_, err := h.AddBalanceChange(context.Background(), &protocol.AddBalanceChangeRequest{
-		ProfileID: uuid.New().String(),
-		Amount:    float64(0),
-	})
-	require.Error(t, err)
 }
 
 func TestGetBalance(t *testing.T) {

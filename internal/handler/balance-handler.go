@@ -32,7 +32,7 @@ func NewBalanceHandler(s BalanceService, validate *validator.Validate) *BalanceH
 
 // ValidationID validate given in and parses it to uuid.UUID type
 func (h *BalanceHandler) ValidationID(ctx context.Context, id string) (uuid.UUID, error) {
-	err := h.validate.VarCtx(ctx, id, "required,required,uuid")
+	err := h.validate.VarCtx(ctx, id, "required,uuid")
 	if err != nil {
 		logrus.Errorf("ValidationID -> %v", err)
 		return uuid.Nil, err
