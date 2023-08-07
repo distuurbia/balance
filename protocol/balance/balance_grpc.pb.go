@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: services.proto
+// source: balance.proto
 
 package balance
 
@@ -173,5 +173,5 @@ var BalanceService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "services.proto",
+	Metadata: "balance.proto",
 }
