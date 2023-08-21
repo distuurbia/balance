@@ -31,22 +31,19 @@ func NewBalanceHandler(s BalanceService, validate *validator.Validate) *BalanceH
 }
 
 // ValidationID validate given in and parses it to uuid.UUID type
-func (h *BalanceHandler) ValidationID(ctx context.Context, id string) (uuid.UUID, error) {
+func (h *BalanceHandler) validationID(ctx context.Context, id string) (uuid.UUID, error) {
 	err := h.validate.VarCtx(ctx, id, "required,uuid")
 	if err != nil {
-		logrus.Errorf("ValidationID -> %v", err)
 		return uuid.Nil, err
 	}
 
 	profileID, err := uuid.Parse(id)
 	if err != nil {
-		logrus.Errorf("ValidationID -> %v", err)
 		return uuid.Nil, err
 	}
 
 	if profileID == uuid.Nil {
-		logrus.Errorf("ValidationID -> error: failed to use uuid")
-		return uuid.Nil, fmt.Errorf("ValidationID -> error: failed to use uuid")
+		return uuid.Nil, fmt.Errorf("validationID -> error: failed to use uuid")
 	}
 	return profileID, nil
 }
@@ -55,19 +52,22 @@ func (h *BalanceHandler) ValidationID(ctx context.Context, id string) (uuid.UUID
 func (h *BalanceHandler) AddBalanceChange(ctx context.Context, req *protocol.AddBalanceChangeRequest) (*protocol.AddBalanceChangeResponse, error) {
 	err := h.validate.VarCtx(ctx, req.Amount, "required,ne=0")
 	if err != nil {
-		logrus.Errorf("ProfileHandler -> AddBalanceChange -> %v", err)
+		logrus.WithField("req.Amount", req.Amount).Errorf("BalanceHandler -> AddBalanceChange -> %v", err)
 		return &protocol.AddBalanceChangeResponse{}, err
 	}
 
-	profileID, err := h.ValidationID(ctx, req.ProfileID)
+	profileID, err := h.validationID(ctx, req.ProfileID)
 	if err != nil {
-		logrus.Errorf("BalanceHandler -> AddBalanceChange -> %v", err)
+		logrus.WithField("req.ProfileID", req.ProfileID).Errorf("BalanceHandler -> AddBalanceChange -> %v", err)
 		return &protocol.AddBalanceChangeResponse{}, err
 	}
 
 	err = h.s.AddBalanceChange(ctx, profileID, req.Amount)
 	if err != nil {
-		logrus.Errorf("ProfileHandler -> AddBalanceChange -> %v", err)
+		logrus.WithFields(logrus.Fields{
+			"profileID":  profileID,
+			"req.Amount": req.Amount,
+		}).Errorf("BalanceHandler -> AddBalanceChange -> %v", err)
 		return &protocol.AddBalanceChangeResponse{}, err
 	}
 
@@ -76,9 +76,9 @@ func (h *BalanceHandler) AddBalanceChange(ctx context.Context, req *protocol.Add
 
 // GetBalance calls lower method of service GetBalance
 func (h *BalanceHandler) GetBalance(ctx context.Context, req *protocol.GetBalanceRequest) (*protocol.GetBalanceResponse, error) {
-	profileID, err := h.ValidationID(ctx, req.ProfileID)
+	profileID, err := h.validationID(ctx, req.ProfileID)
 	if err != nil {
-		logrus.Errorf("BalanceHandler -> GetBalance -> %v", err)
+		logrus.WithField("req.ProfileID", req.ProfileID).Errorf("BalanceHandler -> GetBalance -> %v", err)
 		return &protocol.GetBalanceResponse{}, err
 	}
 
@@ -94,15 +94,15 @@ func (h *BalanceHandler) GetBalance(ctx context.Context, req *protocol.GetBalanc
 // DeleteProfilesBalance calls lower method of service DeleteProfilesBalance
 func (h *BalanceHandler) DeleteProfilesBalance(ctx context.Context, req *protocol.DeleteProfilesBalanceRequest) (
 	*protocol.DeleteProfilesBalanceResponse, error) {
-	profileID, err := h.ValidationID(ctx, req.ProfileID)
+	profileID, err := h.validationID(ctx, req.ProfileID)
 	if err != nil {
-		logrus.Errorf("BalanceHandler -> DeleteProfilesBalance -> %v", err)
+		logrus.WithField("req.ProfileID", req.ProfileID).Errorf("BalanceHandler -> DeleteProfilesBalance -> %v", err)
 		return &protocol.DeleteProfilesBalanceResponse{}, err
 	}
 
 	err = h.s.DeleteProfilesBalance(ctx, profileID)
 	if err != nil {
-		logrus.Errorf("BalanceHandler -> DeleteProfilesBalance -> %v", err)
+		logrus.WithField("profileID", profileID).Errorf("BalanceHandler -> DeleteProfilesBalance -> %v", err)
 		return &protocol.DeleteProfilesBalanceResponse{}, err
 	}
 

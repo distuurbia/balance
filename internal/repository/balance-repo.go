@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,9 +17,6 @@ import (
 type BalanceRepository struct {
 	pool *pgxpool.Pool
 }
-
-// zero contains zero value
-const zero = 0
 
 // NewBalanceRepository creates an object of *ProfileRepository
 func NewBalanceRepository(pool *pgxpool.Pool) *BalanceRepository {
@@ -33,22 +31,22 @@ func (r *BalanceRepository) AddBalanceChange(ctx context.Context, profileID uuid
 		if err != nil {
 			errRollback := tx.Rollback(ctx)
 			if errRollback != nil {
-				logrus.Errorf("BalanceRepository -> Deposit -> %v", errRollback)
+				logrus.Errorf("BalanceRepository -> AddBalanceChange -> %v", errRollback)
 			}
 		} else {
 			errCommit := tx.Commit(ctx)
 			if errCommit != nil {
-				logrus.Errorf("BalanceRepository -> Deposit -> %v", errCommit)
+				logrus.Errorf("BalanceRepository -> AddBalanceChange -> %v", errCommit)
 			}
 		}
 	}()
 
 	if err != nil {
-		return fmt.Errorf("BalanceRepository -> Deposit -> %w", err)
+		return fmt.Errorf("BalanceRepository -> AddBalanceChange -> %w", err)
 	}
 	_, err = r.pool.Exec(ctx, "INSERT INTO balances (balanceID, profileID, amount, tsTime) VALUES($1, $2, $3, $4)", uuid.New(), profileID, amount, time.Now())
 	if err != nil {
-		return fmt.Errorf("BalanceRepository -> Deposit -> %w", err)
+		return fmt.Errorf("BalanceRepository -> AddBalanceChange -> %w", err)
 	}
 	return nil
 }
@@ -72,23 +70,25 @@ func (r *BalanceRepository) GetBalance(ctx context.Context, profileID uuid.UUID)
 	}()
 
 	if err != nil {
-		return zero, fmt.Errorf("GetBalance -> GetBalance -> %w", err)
+		return 0, fmt.Errorf("GetBalance -> GetBalance -> %w", err)
 	}
 
-	var totalBalance float64
+	var totalBalanceDecimal decimal.Decimal
 	var value float64
 	rows, err := r.pool.Query(ctx, "SELECT amount FROM balances WHERE profileID = $1 FOR UPDATE", profileID)
 	if err != nil {
-		return zero, fmt.Errorf("BalanceRepository -> GetBalance -> %w", err)
+		return 0, fmt.Errorf("BalanceRepository -> GetBalance -> %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&value)
 		if err != nil {
-			return zero, fmt.Errorf("BalanceRepository -> GetBalance -> %w", err)
+			return 0, fmt.Errorf("BalanceRepository -> GetBalance -> %w", err)
 		}
-		totalBalance += value
+		valueDecimal := decimal.NewFromFloat(value)
+		totalBalanceDecimal = totalBalanceDecimal.Add(valueDecimal)
 	}
+	totalBalance := totalBalanceDecimal.InexactFloat64()
 	return totalBalance, nil
 }
 
